@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>블루베리 스마트 재배 관리 & 품종 도감 | Blueberry Farm Care</title>
+  <meta name="description" content="북부/남부 하이부시 및 래빗아이 품종 도감, 배지 배합 및 pH 계산기, 동해·냉해 위험도 시뮬레이터, 연간 영농 캘린더를 제공하는 블루베리 스마트 재배 관리 웹앱">
+  
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'sans-serif'],
+          },
+          colors: {
+            blueberry: {
+              50: '#f0f5ff',
+              100: '#e0ebfe',
+              200: '#bbd5fd',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+            <span class="text-xl">🫐</span>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-gray-900 dark:text-white leading-tight flex items-center gap-2">
+              블루베리 스마트 팜 케어
+              <span class="hidden sm:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">v1.0 MVP</span>
+            </h1>
+            <p class="text-xs text-gray-500 dark:text-gray-400">품종 도감 · 배지·pH 계산기 · 동해 진단 올인원 가이드</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- 테마 토글 버튼 -->
+          <button id="theme-toggle-btn" class="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="다크 모드 전환">
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
+          </button>
+          <a href="https://github.com/ksj7240-byte/blueberry-farm-care" target="_blank" rel="noopener noreferrer" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-gray-900 dark:bg-gray-800 text-white hover:bg-gray-700 transition">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            GitHub
+          </a>
+        </div>
+      </div>
+
+      <!-- 탭 메뉴 바 -->
+      <nav class="flex space-x-1 sm:space-x-4 overflow-x-auto custom-scrollbar border-t border-gray-100 dark:border-gray-800/60 pt-1">
+        <button data-target="tab-varieties" class="nav-tab-btn active border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold px-3 py-2.5 text-sm whitespace-nowrap flex items-center gap-2">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          품종 도감 (14종)
+        </button>
+        <button data-target="tab-calculator" class="nav-tab-btn text-gray-500 dark:text-gray-400 px-3 py-2.5 text-sm whitespace-nowrap flex items-center gap-2 hover:text-indigo-600 transition">
+          <i data-lucide="calculator" class="w-4 h-4"></i>
+          배지·pH 스마트 계산기
+        </button>
+        <button data-target="tab-frost" class="nav-tab-btn text-gray-500 dark:text-gray-400 px-3 py-2.5 text-sm whitespace-nowrap flex items-center gap-2 hover:text-indigo-600 transition">
+          <i data-lucide="snowflake" class="w-4 h-4"></i>
+          동해·냉해 위험 시뮬레이터
+        </button>
+        <button data-target="tab-calendar" class="nav-tab-btn text-gray-500 dark:text-gray-400 px-3 py-2.5 text-sm whitespace-nowrap flex items-center gap-2 hover:text-indigo-600 transition">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          연간 영농 캘린더
+        </button>
+        <button data-target="tab-manual" class="nav-tab-btn text-gray-500 dark:text-gray-400 px-3 py-2.5 text-sm whitespace-nowrap flex items-center gap-2 hover:text-indigo-600 transition">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          표준 재배 매뉴얼 요약
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 컨텐츠 영역 -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- 현재 시기 긴급 영농 팁 배너 (10월~11월 가을/동절기 대비) -->
+    <div class="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <div class="p-2.5 rounded-xl bg-white/10 shrink-0 text-cyan-300">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-xs uppercase font-extrabold tracking-wider text-cyan-300">현재 시즌 영농 긴급 알림 (10월~11월)</span>
+          <h2 class="text-base sm:text-lg font-bold mt-0.5">동해방지 관수(Winterizing) & 화분 3중 피복 월동 준비</h2>
+          <p class="text-xs text-blue-200 mt-1 leading-relaxed">
+            땅이 얼기 직전 11월 중하순 1회 30~40mm 심토 관수가 겨울철 건조 탈수사(동건 피해)를 차단합니다. 주간부 친환경 백색 수성페인트(1:1) 도포를 준비하세요.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="navigateToTab('tab-frost')" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-bold rounded-xl text-xs transition shadow">
+          동해 위험 진단하기
+        </button>
+      </div>
+    </div>
+
+    <!-- 1. 품종 도감 탭 -->
+    <section id="tab-varieties" class="tab-content-panel">
+      <!-- 필터 및 검색 컨트롤 -->
+      <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div class="flex items-center gap-2">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">품종 탐색 및 필터</h3>
+            <span id="variety-count-badge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+              14개 품종
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5 cursor-pointer bg-slate-50 dark:bg-gray-700/60 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600">
+              <input type="checkbox" id="pot-only-filter" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+              <span>🪴 화분 재배 추천만 보기</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="variety-search" placeholder="품종명, 특징, 당도 검색..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white">
+          </div>
+
+          <div>
+            <select id="lineage-filter" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white">
+              <option value="all">전체 계통 (북부·남부·래빗아이)</option>
+              <option value="northern">북부 하이부시 (추위 강함, 중북부 권장)</option>
+              <option value="southern">남부 하이부시 (저온요구시간 적음, 하우스/남부)</option>
+              <option value="rabbiteye">래빗아이 (수세 왕성, 고온적응, 타가수분)</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="season-filter" class="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white">
+              <option value="all">전체 숙기 (수확 시기)</option>
+              <option value="early">조생종 (5월하순~6월중순)</option>
+              <option value="mid">중생종 (6월중하순~7월초)</option>
+              <option value="late">만생/극만생종 (7월중하순~8월하순)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 품종 카드 그리드 -->
+      <div id="variety-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- app.js에서 동적 생성 -->
+      </div>
+    </section>
+
+    <!-- 2. 배지·pH 스마트 계산기 탭 -->
+    <section id="tab-calculator" class="tab-content-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- 1) 화분 배지 배합 및 수화 계산기 -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+                <i data-lucide="layers" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">화분 배지(용토) 스마트 배합 계산기</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">무조정 피트모스 50% + 펄라이트 25% + 바크 25% 표준 레시피</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 my-5 text-xs">
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1.5">화분 종류 및 규격 선택</label>
+                <select id="calc-pot-size" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
+                  <option value="25">1~2년생 유목 화분 (직경 28cm / 25L)</option>
+                  <option value="50" selected>3~4년생 성목 초기 화분 (직경 42cm / 50L)</option>
+                  <option value="80">5년생 이상 대형 결실 화분 (직경 55cm / 80L)</option>
+                  <option value="100">특대형 차광 부직포백 (100L)</option>
+                  <option value="0">직접 입력 (사용자 지정 용량 L)</option>
+                </select>
+              </div>
+
+              <div id="custom-size-container" class="hidden">
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1.5">화분 1개당 용량 (L)</label>
+                <input type="number" id="calc-custom-size" value="60" min="5" max="500" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1.5">식재할 화분 수량 (주수)</label>
+                <input type="number" id="calc-pot-count" value="10" min="1" max="10000" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50/70 dark:bg-indigo-950/40 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/60 text-xs">
+            <h4 class="font-bold text-indigo-900 dark:text-indigo-200 mb-2 flex items-center justify-between">
+              <span>필요 자재 총 소요량 계산 결과</span>
+              <span id="res-total-vol" class="text-sm font-extrabold text-indigo-600 dark:text-indigo-400">500 L</span>
+            </h4>
+            <div class="grid grid-cols-3 gap-2 text-center mb-3">
+              <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700">
+                <span class="text-gray-400 block text-[10px]">무조정 피트모스 (50%)</span>
+                <strong id="res-peatmoss-vol" class="text-indigo-700 dark:text-indigo-300 font-bold">250 L</strong>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700">
+                <span class="text-gray-400 block text-[10px]">펄라이트 대립 (25%)</span>
+                <strong id="res-perlite-vol" class="text-indigo-700 dark:text-indigo-300 font-bold">125 L</strong>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700">
+                <span class="text-gray-400 block text-[10px]">소나무 파쇄 바크 (25%)</span>
+                <strong id="res-bark-vol" class="text-indigo-700 dark:text-indigo-300 font-bold">125 L</strong>
+              </div>
+            </div>
+            <div class="p-2.5 bg-blue-100/60 dark:bg-blue-900/40 rounded-lg text-blue-900 dark:text-blue-200 flex items-start gap-2">
+              <i data-lucide="droplet" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+              <div>
+                <strong>필수 수화(물먹이기) 작업 안내:</strong> 피트모스는 마른 상태로 심으면 물을 튕겨내므로 식재 전 <span id="res-water-hydration" class="font-bold underline">약 88 L의 미온수</span>를 혼합하며 손으로 쥐었을 때 물방울이 1~2방울 맺힐 때까지 충분히 반죽해 수화시키세요.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2) 토양 산도(pH) 진단 및 비배 처방기 -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400">
+                <i data-lucide="flask-conical" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">토양 pH 진단 및 즉각 처방기</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">블루베리 최적 산도 범위: pH 4.2 ~ 5.0 (천근성·산성 필수)</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 my-5 text-xs">
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1.5">현재 측정된 토양 또는 관수 pH 입력</label>
+                <div class="flex gap-2">
+                  <input type="number" id="input-current-ph" step="0.1" min="3.0" max="8.5" value="5.6" placeholder="예: 4.8" class="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white text-base font-bold">
+                  <button id="btn-diagnose-ph" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-xs shadow">
+                    진단 및 처방
+                  </button>
+                </div>
+              </div>
+
+              <!-- 기준 게이지 안내 -->
+              <div class="p-3 bg-slate-50 dark:bg-gray-700/40 rounded-xl space-y-1.5">
+                <div class="flex justify-between text-[11px] font-semibold">
+                  <span class="text-amber-600">3.5 과산성</span>
+                  <span class="text-emerald-600">4.2 ~ 5.0 [최적]</span>
+                  <span class="text-yellow-600">5.5 경계</span>
+                  <span class="text-rose-600">6.0+ 고사위험</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-gradient-to-r from-amber-400 via-emerald-500 to-rose-500"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 진단 결과 카드 -->
+          <div id="ph-diagnosis-card" class="text-xs">
+            <!-- app.js에서 동적 생성 -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 영농 비료 3대 절대 원칙 카드 -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm text-xs">
+        <h4 class="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-indigo-500"></i>
+          블루베리 비배(시비) 관리의 3대 절대 원칙
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900">
+            <strong class="text-rose-700 dark:text-rose-300 block mb-1 font-bold">1. 질소원은 오직 '암모늄태'</strong>
+            <p class="text-rose-600 dark:text-rose-300">황산암모늄(유안)만 흡수 가능합니다. 일반 질산태(질산칼슘 등)는 블루베리가 분해하지 못하고 토양을 알칼리화시켜 뿌리를 고사시킵니다.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+            <strong class="text-amber-700 dark:text-amber-300 block mb-1 font-bold">2. 8월 중순 이후 질소 전면 중단</strong>
+            <p class="text-amber-600 dark:text-amber-300">늦가을 2차 신초가 웃자라면 목질화가 되지 않아 영하 5℃의 첫 추위에도 가지가 얼어붙어 겨울철 100% 동사합니다.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
+            <strong class="text-blue-700 dark:text-blue-300 block mb-1 font-bold">3. 철 결핍 시 Fe-EDDHA 즉각 관주</strong>
+            <p class="text-blue-600 dark:text-blue-300">pH가 높아 잎맥 사이가 노랗게 변하는 황화현상 발생 시 일반 황산철 대신 고산도에서도 흡수되는 킬레이트 철 1,000배액을 살포하세요.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 동해·냉해 위험 시뮬레이터 탭 -->
+    <section id="tab-frost" class="tab-content-panel hidden space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400">
+            <i data-lucide="thermometer-snowflake" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">기온별 동해·냉해 위험도 시뮬레이터</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">봄철 개화기 늦서리 냉해 & 겨울 혹한기 지상부 동해 위험도와 골든타임 행동 수칙</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-2">분석할 계절 위험 모드</label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-700/50 cursor-pointer">
+                  <input type="radio" name="sim-season" value="spring" checked class="text-indigo-600 focus:ring-indigo-500">
+                  <span>🌸 봄철 개화기 늦서리 (3~4월)</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-700/50 cursor-pointer">
+                  <input type="radio" name="sim-season" value="winter" class="text-indigo-600 focus:ring-indigo-500">
+                  <span>❄️ 겨울 혹한기 동해 (12~2월)</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1.5">재배 계통 선택</label>
+              <select id="sim-lineage-select" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
+                <option value="northern">북부 하이부시 (내한 한계 -20℃ ~ -25℃)</option>
+                <option value="southern">남부 하이부시 (내한 한계 -12℃ ~ -15℃)</option>
+                <option value="rabbiteye">래빗아이 (내한 한계 -10℃ 내외)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-2">식재 형태 (지열 차단 여부)</label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-700/50 cursor-pointer">
+                  <input type="radio" name="sim-cultivation" value="ground" checked class="text-indigo-600">
+                  <span>🌱 노지 과원 식재 (지열 보호)</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-700/50 cursor-pointer">
+                  <input type="radio" name="sim-cultivation" value="pot" class="text-indigo-600">
+                  <span>🪴 화분/부직포백 (급랭 위험 +7℃)</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="font-semibold text-gray-700 dark:text-gray-300">예상 최저 기온 시뮬레이션</label>
+                <span id="sim-temp-display" class="text-base font-black text-cyan-600 dark:text-cyan-400">-1 ℃</span>
+              </div>
+              <input type="range" id="sim-temp-slider" min="-30" max="15" value="-1" step="1" class="w-full accent-cyan-600 cursor-pointer">
+              <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                <span>-30℃ (극강 추위)</span>
+                <span>0℃ (결빙점)</span>
+                <span>+15℃ (온화)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 시뮬레이션 결과 박스 -->
+          <div id="sim-result-box" class="flex flex-col justify-center">
+            <!-- app.js에서 렌더링 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 과학적 방제 원리 해설 카드 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+          <h4 class="font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+            <span class="text-blue-500 font-black">💧</span>
+            봄철 늦서리 살수빙결법의 과학적 원리
+          </h4>
+          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+            물이 얼음으로 얼어붙을 때 <strong>1g당 80칼로리의 응고잠열</strong>을 대기로 방출합니다. 꽃봉오리 표면에 지속적으로 미세살수를 해주면 물이 얼면서 내뿜는 열기로 인해 꽃눈 내부 온도가 0℃ 이하로 내려가지 않는 빙결 보호막이 형성됩니다. (★ 얼음이 녹을 때까지 살수를 중단하면 기화열을 뺏겨 동사하므로 해 뜰 때까지 살수를 지속해야 합니다.)
+          </p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+          <h4 class="font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+            <span class="text-cyan-500 font-black">❄️</span>
+            11월 동해방지 관수(Winterizing)의 핵심
+          </h4>
+          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+            물의 비열(1.0 cal/g·℃)은 일반 마른 흙(0.2 cal/g·℃)보다 <strong>5배 높아 지중 온도의 급하강을 완충</strong>하는 천연 보온재 역할을 합니다. 겨울철 수목 고사의 70%는 추위 그 자체보다 겨울 찬바람에 수분이 증발해 말라 죽는 <strong>동건(Dry Freezing)</strong>이므로 11월 하순 30~40mm 흠뻑 관수가 필수적입니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 연간 영농 캘린더 탭 -->
+    <section id="tab-calendar" class="tab-content-panel hidden">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">연간 생육 주기별 표준 영농 캘린더</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">발아, 개화, 수확, 비배 관리, 동계 전정 12개월 핵심 일정</p>
+        </div>
+      </div>
+
+      <div id="calendar-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- app.js에서 렌더링 -->
+      </div>
+    </section>
+
+    <!-- 5. 표준 재배 매뉴얼 요약 탭 -->
+    <section id="tab-manual" class="tab-content-panel hidden space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">블루베리 표준 영농 가이드 요약</h3>
+        
+        <div class="space-y-6 text-sm text-gray-700 dark:text-gray-300">
+          <div>
+            <h4 class="font-bold text-gray-900 dark:text-white text-base mb-2">1. 블루베리 근계 생리와 토양 환경</h4>
+            <p class="leading-relaxed">
+              블루베리는 천근성 수염뿌리 구조로 뿌리의 80%가 지표면 30cm 이내에 분포하며 뿌리털(Root hair)이 없습니다. 건조와 과습에 극히 취약하므로 일반 흙 대신 무조정 피트모스를 주당 50~100L 투입하고 두둑 폭 1.2~1.5m, 높이 30~50cm의 고두둑을 지어야 합니다.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-gray-900 dark:text-white text-base mb-2">2. 수분수(혼식) 배치 원칙</h4>
+            <p class="leading-relaxed">
+              자가불화합성이 강한 래빗아이는 물론 북부/남부 하이부시도 타가수분을 시키면 결실률이 20% 이상 증가하고 과실 크기가 현저히 커집니다. 주품종 70~80%에 개화기가 겹치는 동일 계통의 수분수를 20~30% 비율로 교차 식재하세요.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-gray-900 dark:text-white text-base mb-2">3. 수확 및 예냉 관리</h4>
+            <p class="leading-relaxed">
+              이슬이 마른 아침 06:00~10:00 사이 서늘할 때 수확하고, 수확 즉시 10~15℃ 그늘에서 1차 예냉 후 0~2℃ 저온저장고에 보관해야 무름과 과분 손상을 막을 수 있습니다.
+            </p>
+          </div>
+
+          <div class="p-4 bg-slate-50 dark:bg-gray-700/50 rounded-xl">
+            <h4 class="font-bold text-gray-900 dark:text-white mb-1">📄 상세 기획서 (PRD) 확인</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">본 웹앱은 Paweł Huryn의 `create-prd` 8섹션 템플릿 표준에 따라 기획 및 구현되었습니다.</p>
+            <a href="PRD.md" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition">
+              <i data-lucide="file-code" class="w-4 h-4"></i>
+              PRD.md 원본 문서 보기
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 품종 상세 모달 -->
+  <div id="variety-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+    <div id="variety-modal-content" class="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full border border-gray-100 dark:border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <!-- app.js에서 렌더링 -->
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-6 text-xs text-gray-500 dark:text-gray-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span>🫐 블루베리 스마트 팜 케어 (Blueberry Farm Care)</span>
+        <span>·</span>
+        <span>Built with Antigravity AI & create-prd skill</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/ksj7240-byte" target="_blank" class="hover:text-indigo-600 transition">GitHub @ksj7240-byte</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
